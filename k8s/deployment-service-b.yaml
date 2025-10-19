@@ -1,0 +1,46 @@
+# Kubernetes Deployment for Service B
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-b
+spec:
+  replicas: 1  # Single replica of Service B
+  selector:
+    matchLabels:
+      app: service-b
+  template:
+    metadata:
+      labels:
+        app: service-b
+    spec:
+      containers:
+        - name: service-b
+          image: devopsacr123.azurecr.io/service-b:v1  # ACR image
+          ports:
+            - containerPort: 80  # HTTP port
+          livenessProbe:  # Restart container if unresponsive
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:  # Only send traffic when ready
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+# Internal ClusterIP service for Service B
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-b
+spec:
+  type: ClusterIP      # Internal-only access
+  selector:
+    app: service-b  # Targets pods labeled with app=service-b
+  ports:
+    - protocol: TCP
+      port: 80         # Exposed inside cluster
+      targetPort: 80   # Target container port

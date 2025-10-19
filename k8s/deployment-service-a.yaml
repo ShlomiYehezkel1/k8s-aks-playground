@@ -1,0 +1,46 @@
+# Kubernetes Deployment for Service A
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-a
+spec:
+  replicas: 1  # Run one instance of Service A
+  selector:
+    matchLabels:
+      app: service-a
+  template:
+    metadata:
+      labels:
+        app: service-a
+    spec:
+      containers:
+        - name: service-a
+          image: devopsacr123.azurecr.io/service-a:v1  # ACR image
+          ports:
+            - containerPort: 80  # Expose HTTP port
+          livenessProbe:  # Ensure app is running (restart if unhealthy)
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:  # Ensure app is ready before traffic is sent
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+# Internal ClusterIP service for Service A
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-a
+spec:
+  type: ClusterIP      # Internal service (used by Ingress)
+  selector:
+    app: service-a  # Matches pods created by this deployment
+  ports:
+    - protocol: TCP
+      port: 80         # Port exposed internally
+      targetPort: 80   # Port on the container

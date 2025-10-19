@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: services-ingress
+  annotations:
+      # This annotation rewrites the incoming request path so the backend services receive clean URLs.
+    # For example, a request to /service-a/health becomes /health when forwarded to the service.
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /service-a(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+          # Route requests starting with /service-a to the service-a Service (K8s Service).
+            name: service-a
+            port:
+              number: 80
+      - path: /service-b(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            # Route requests starting with /service-b to the service-b Service (K8s Service).
+            name: service-b
+            port:
+              number: 80

@@ -1,0 +1,15 @@
+# This service exposes Service A within the cluster on port 80
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-a
+  labels:
+    app: service-a
+spec:
+  selector:
+    app: service-a  # Matches pods with this label
+  ports:
+    - protocol: TCP
+      port: 80         # Port exposed by the service
+      targetPort: 80   # Container port that receives traffic
+  type: ClusterIP      # Internal-only service, used by Ingress or other pods
